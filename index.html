@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>ยืนยันการเบิกยา</title>
+
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: #f5f5f5;
+            padding: 16px;
+            letter-spacing: 0.2px;
+        }
+
+        * {
+            font-family: 'Prompt', sans-serif;
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font-family: 'Prompt', sans-serif;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        select {
+            text-align: center;
+            text-align-last: center;
+            font-weight: 500;
+            font-size: 16px;
+            padding: 10px;
+        }
+
+        input {
+            width: 70px;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .note {
+            width: 140px;
+        }
+
+        th {
+            font-weight: 500;
+        }
+
+        button {
+            font-weight: 500;
+        }
+
+        select,
+        button {
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        #searchInput {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 6px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            margin-top: 4px;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .control-group select,
+        .control-group button {
+            flex: 1;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            font-size: 16px;
+            color: #666;
+            text-align: center;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1s infinite;
+        }
+
+        .primary-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            padding: 12px 16px;
+        }
+
+        .primary-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .primary-btn:active {
+            transform: scale(0.97);
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        th {
+            background: #d9ead3;
+            font-weight: bold;
+        }
+
+        td.name {
+            text-align: left;
+        }
+
+        thead th {
+            position: sticky;
+            z-index: 5;
+            background: #d9ead3;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        input {
+            width: 80px;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        input:focus {
+            outline: none;
+            border: 2px solid #6aa84f;
+            background: #f0fff0;
+        }
+
+        .note {
+            width: 120px;
+        }
+
+        .save-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 16px;
+            background: #6aa84f;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .save-btn:active {
+            transform: scale(0.98);
+        }
+
+        .save-btn:disabled {
+            background: #a5d6a7;
+            /* เขียวอ่อน */
+            cursor: not-allowed;
+            opacity: 1;
+        }
+
+        .save-btn.loading::after {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid white;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            margin-left: 8px;
+            animation: spin 1s linear infinite;
+        }
+
+        #dataSection {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        #loadingTable {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        #loadingTable::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid #ccc;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: spin 1s linear infinite;
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: none;
+            padding-bottom: 0px;
+            border-radius: 12px;
+        }
+
+        .popup {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.3s;
+            padding-top: 80px;
+        }
+
+        .popup.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .popup-box {
+            background: white;
+            padding: 24px 32px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: popupScale 0.3s ease;
+        }
+
+        .popup-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .popup-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .popup-box.success {
+            border-top: 4px solid #4CAF50;
+        }
+
+        .popup-box.error {
+            border-top: 4px solid #e74c3c;
+        }
+
+        @keyframes popupScale {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            h2 {
+                font-size: 18px;
+            }
+
+            th,
+            td {
+                font-size: 12px;
+                padding: 8px;
+            }
+
+            input {
+                width: 60px;
+                font-size: 12px;
+            }
+
+            .control-group {
+                flex-direction: column;
+            }
+        }
+
+        @keyframes dots {
+            0% {
+                content: '.';
+            }
+
+            33% {
+                content: '..';
+            }
+
+            66% {
+                content: '...';
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>💊 ยืนยันการเบิกยา</h2>
+
+    <div class="container">
+
+        <div class="card">
+
+            <div class="control-group">
+
+                <select id="typeSelect" onchange="onTypeChange()">
+
+                    <option value="">-- เลือกประเภทยา --</option>
+                    <option value="tablet">ยาเม็ด</option>
+                    <option value="liquid">ยาน้ำ/ยาฉีด</option>
+
+                </select>
+
+                <select id="sheetSelect" disabled></select>
+
+                <button id="loadBtn" class="primary-btn" onclick="loadTable()" disabled>
+                    โหลดรายการ
+                </button>
+
+            </div>
+
+            <div id="dataSection">
+
+
+
+                <div class="sticky-header">
+                    <input type="text" id="searchInput" placeholder="🔍 ค้นหาชื่อยา..." oninput="renderTable()">
+                </div>
+
+                <div class="table-wrapper">
+
+                    <table id="drugTable">
+
+                        <thead>
+                            <tr>
+                                <th>ลำดับ</th>
+                                <th>ชื่อยา</th>
+                                <th>จำนวนเบิก</th>
+                                <th>จำนวนที่ได้จริง</th>
+                                <th>หมายเหตุ</th>
+                            </tr>
+                        </thead>
+
+                        <tbody></tbody>
+
+                    </table>
+
+                </div>
+
+                <button class="save-btn" onclick="saveData()">💾 บันทึก</button>
+
+            </div>
+
+        </div>
+
+        <div id="loadingText" class="loading">
+            ⏳ กำลังโหลดรายการวันที่...
+        </div>
+
+        <div id="loadingTable" class="loading">
+            🔄 กำลังโหลดรายการเบิกยา...
+        </div>
+
+    </div>
+
+    <div id="popup" class="popup">
+        <div class="popup-box">
+            <div class="popup-icon">✅</div>
+            <div class="popup-text">บันทึกเรียบร้อย</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbyOl11s8-Yo-rfz3Xzs-GdRi4M60ubn5SNrhG9C6uvzCyAOqRbeV8MIX3ztidXxGRk/exec";
+
+        let data = [];
+
+        async function loadSheetNames() {
+            const type = document.getElementById("typeSelect").value;
+
+            if (!type) return;
+
+            const loading = document.getElementById("loadingText");
+            const sheetSelect = document.getElementById("sheetSelect");
+
+            // 👇 แสดง loading + ปิด dropdown ชั่วคราว
+            loading.style.display = "block";
+            sheetSelect.disabled = true;
+
+            const res = await fetch(`${API_URL}?action=getSheets&type=${type}`);
+            const sheets = await res.json();
+
+            sheetSelect.innerHTML = "<option value=''>-- เลือกวันที่ --</option>";
+
+            sheets.reverse().forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.textContent = name;
+                sheetSelect.appendChild(opt);
+            });
+
+            // 👇 โหลดเสร็จ
+            loading.style.display = "none";
+            sheetSelect.disabled = false;
+        }
+
+        async function loadTable() {
+            const type = document.getElementById("typeSelect").value;
+            const sheetName = document.getElementById("sheetSelect").value;
+            const loadBtn = document.getElementById("loadBtn");
+            const loading = document.getElementById("loadingTable");
+
+            // 👇 เริ่ม loading
+            loadBtn.disabled = true;
+            loadBtn.textContent = "กำลังโหลด...";
+            loading.style.display = "block";
+
+            const res = await fetch(`${API_URL}?action=getData&type=${type}&sheetName=${sheetName}`);
+            data = (await res.json()).filter(item => {
+                return item.name && item.name.trim() !== "" && item.qty;
+            });
+
+            renderTable();
+
+            document.getElementById("dataSection").style.display = "block";
+
+            // 👇 โหลดเสร็จ
+            loading.style.display = "none";
+            loadBtn.textContent = "โหลดรายการ";
+            loadBtn.disabled = false;
+        }
+
+        function extractNumber(val) {
+            if (!val) return "";
+
+            val = val.toString();
+
+            if (val.includes("x")) {
+                return val.split("x")[0]; // เอาเฉพาะเลขหน้า
+            }
+
+            return val;
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector("#drugTable tbody");
+            const keyword = document.getElementById("searchInput").value.toLowerCase();
+
+            tbody.innerHTML = "";
+
+            data
+                .filter(d => d.name.toLowerCase().includes(keyword))
+                .forEach((item, index) => {
+
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+                        <td>${item.no}</td>
+                        <td class="name">${item.name}</td>
+                        <td>${item.qty}</td>
+                        <td>
+                            <input 
+                                type="number" 
+                                id="actual-${index}" 
+                                value="${extractNumber(item.actualQty)}"
+                                min="0"
+                            >
+                        </td>
+                        <td><input type="text" id="note-${index}" value="${item.note || ''}"></td>
+                    `;
+
+                    tbody.appendChild(tr);
+                });
+        }
+
+        async function saveData() {
+            const saveBtn = document.querySelector(".save-btn");
+
+            // 🔒 กันกดซ้ำ
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = "💾 กำลังบันทึก...";
+
+            saveBtn.classList.add("loading");
+
+            const type = document.getElementById("typeSelect").value;
+            const sheetName = document.getElementById("sheetSelect").value;
+
+            let result = [];
+
+            data.forEach((item, index) => {
+                let actual = document.getElementById(`actual-${index}`).value;
+
+                // กัน NaN + ช่องว่าง
+                if (actual !== "") {
+                    actual = Number(actual);
+                }
+
+                const note = document.getElementById(`note-${index}`).value;
+
+                result.push({
+                    name: item.name,
+                    requestQty: item.qty,
+                    actualQty: actual,
+                    note: note
+                });
+            });
+
+            if (result.length === 0) {
+                showPopup("ไม่มีข้อมูลให้บันทึก");
+
+                // 🔓 ปลดล็อค
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = "💾 บันทึก";
+                saveBtn.classList.remove("loading");
+                return;
+            }
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "savePharma",
+                        type,
+                        sheetName,
+                        items: result
+                    })
+                });
+
+                const text = await res.text();
+
+                if (text === "success") {
+                    showPopup("บันทึกเรียบร้อย");
+                } else {
+                    showPopup("บันทึกไม่สำเร็จ");
+                }
+
+            } catch (err) {
+                console.error(err);
+                showPopup("❌ ERROR");
+
+                // 🔓 ถ้า error ต้องปลดล็อค
+                saveBtn.disabled = false;
+                saveBtn.textContent = "💾 บันทึก";
+                saveBtn.classList.remove("loading");
+            }
+        }
+
+        function resetUI() {
+            // เคลียร์ข้อมูล
+            data = [];
+
+            // เคลียร์ dropdown วันที่
+            const sheetSelect = document.getElementById("sheetSelect");
+            sheetSelect.innerHTML = "<option value=''>-- เลือกวันที่ --</option>";
+            sheetSelect.disabled = true;
+
+            // เคลียร์ search
+            document.getElementById("searchInput").value = "";
+
+            // เคลียร์ table
+            document.querySelector("#drugTable tbody").innerHTML = "";
+
+            // ซ่อน section
+            document.getElementById("dataSection").style.display = "none";
+        }
+
+        function onTypeChange() {
+            resetUI();        // 👈 เคลียร์ทุกอย่างก่อน
+            loadSheetNames(); // 👈 แล้วค่อยโหลดใหม่
+        }
+
+        document.getElementById("sheetSelect").addEventListener("change", function () {
+            const loadBtn = document.getElementById("loadBtn");
+
+            if (this.value) {
+                loadBtn.disabled = false;
+            } else {
+                loadBtn.disabled = true;
+            }
+        });
+
+        function showPopup(message) {
+            const popup = document.getElementById("popup");
+
+            const isSuccess = message.includes("เรียบร้อย") || message.includes("สำเร็จ");
+
+            popup.querySelector(".popup-box").className = "popup-box " + (isSuccess ? "success" : "error");
+            popup.querySelector(".popup-icon").textContent = isSuccess ? "✅" : "❌";
+            popup.querySelector(".popup-text").textContent = message;
+
+            popup.classList.add("show");
+
+            // ⏱ ปิดอัตโนมัติ
+            setTimeout(() => {
+                popup.classList.remove("show");
+
+                // 🔄 reset หลังปิด
+                resetAll();
+            }, 3000);
+        }
+
+        function resetAll() {
+            data = [];
+
+            // reset dropdown
+            document.getElementById("typeSelect").value = "";
+            document.getElementById("sheetSelect").innerHTML = "<option value=''>-- เลือกวันที่ --</option>";
+            document.getElementById("sheetSelect").disabled = true;
+
+            // reset ปุ่ม
+            document.getElementById("loadBtn").disabled = true;
+
+            // เคลียร์ search
+            document.getElementById("searchInput").value = "";
+
+            // เคลียร์ table
+            document.querySelector("#drugTable tbody").innerHTML = "";
+
+            // ซ่อน data
+            document.getElementById("dataSection").style.display = "none";
+        }
+    </script>
+
+</body>
+
+</html>
