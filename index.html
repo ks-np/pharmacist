@@ -72,6 +72,10 @@
             font-weight: 500;
         }
 
+        .typeSelect {
+            cursor: pointer;
+        }
+
         select,
         button {
             padding: 10px;
@@ -199,29 +203,22 @@
             font-size: 18px;
             font-weight: bold;
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
         }
 
         .save-btn:active {
-            transform: scale(0.98);
+            transform: scale(0.97);
+            background: #ccc;
+            color: #666;
+            transition: all 0.15s ease;
         }
 
         .save-btn:disabled {
             background: #a5d6a7;
-            /* เขียวอ่อน */
+            color: #ffffff;
+            opacity: 0.7;
             cursor: not-allowed;
             opacity: 1;
-        }
-
-        .save-btn.loading::after {
-            content: '';
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid white;
-            border-top: 2px solid transparent;
-            border-radius: 50%;
-            margin-left: 8px;
-            animation: spin 1s linear infinite;
         }
 
         #dataSection {
@@ -262,13 +259,12 @@
             inset: 0;
             background: rgba(0, 0, 0, 0.2);
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
             z-index: 999;
             opacity: 0;
             pointer-events: none;
             transition: 0.3s;
-            padding-top: 80px;
         }
 
         .popup.show {
@@ -278,11 +274,35 @@
 
         .popup-box {
             background: white;
-            padding: 24px 32px;
+            padding: 28px 32px;
             border-radius: 16px;
             text-align: center;
+            width: 320px;
+            max-width: 90%;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             animation: popupScale 0.3s ease;
+        }
+
+        .popup-box button {
+            margin-top: 16px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            background: #4CAF50;
+            color: white;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .popup-box button:hover {
+            background: #43a047;
+        }
+
+        .popup-box button:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .popup-icon {
@@ -291,8 +311,9 @@
         }
 
         .popup-text {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
+            margin-top: 8px;
         }
 
         .popup-box.success {
@@ -301,6 +322,52 @@
 
         .popup-box.error {
             border-top: 4px solid #e74c3c;
+        }
+
+        .closePopup {
+            margin-top: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #4CAF50;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* dropdown วันที่ (เปิดใช้งานแล้ว) */
+        #sheetSelect:not(:disabled) {
+            cursor: pointer;
+        }
+
+        /* ปุ่มโหลดรายการ (เปิดใช้งานแล้ว) */
+        #loadBtn:not(:disabled) {
+            cursor: pointer;
+        }
+
+        .edited-row {
+            background: #fffde7;
+        }
+
+        .primary-btn,
+        .save-btn {
+            transition: all 0.15s ease;
+            /* ✅ ทำให้ลื่น */
+        }
+
+        .save-btn:hover:not(:disabled) {
+            background: #5a9442;
+            /* เขียวเข้มขึ้น */
+        }
+
+        .primary-btn:hover:not(:disabled),
+        .save-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .primary-btn:hover:not(:disabled),
+        .save-btn:hover:not(:disabled) {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
 
         @keyframes popupScale {
@@ -384,7 +451,7 @@
 
             <div class="control-group">
 
-                <select id="typeSelect" onchange="onTypeChange()">
+                <select id="typeSelect" onchange="onTypeChange()" class="typeSelect">
 
                     <option value="">-- เลือกประเภทยา --</option>
                     <option value="tablet">ยาเม็ด</option>
@@ -448,6 +515,10 @@
         <div class="popup-box">
             <div class="popup-icon">✅</div>
             <div class="popup-text">บันทึกเรียบร้อย</div>
+
+            <!-- ✅ เพิ่มปุ่ม -->
+            <button onclick="closePopup()" class="closePopup">ตกลง</button>
+
         </div>
     </div>
 
@@ -455,6 +526,13 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyOl11s8-Yo-rfz3Xzs-GdRi4M60ubn5SNrhG9C6uvzCyAOqRbeV8MIX3ztidXxGRk/exec";
 
         let data = [];
+
+        window.addEventListener("beforeunload", function (e) {
+            if (data.length > 0) {
+                e.preventDefault();
+                e.returnValue = "";
+            }
+        });
 
         async function loadSheetNames() {
             const type = document.getElementById("typeSelect").value;
@@ -473,12 +551,40 @@
 
             sheetSelect.innerHTML = "<option value=''>-- เลือกวันที่ --</option>";
 
-            sheets.reverse().forEach(name => {
-                const opt = document.createElement("option");
-                opt.value = name;
-                opt.textContent = name;
-                sheetSelect.appendChild(opt);
-            });
+            sheets
+                .sort((a, b) => {
+
+                    function parseSheetName(str) {
+                        // แยก (n)
+                        const match = str.match(/\((\d+)\)/);
+                        const round = match ? Number(match[1]) : 0;
+
+                        // เอาเฉพาะวันที่
+                        const datePart = str.replace(/\s*\(\d+\)/, '');
+                        const [d, m, y] = datePart.split('-').map(Number);
+
+                        const date = new Date(y, m - 1, d);
+
+                        return { date, round };
+                    }
+
+                    const A = parseSheetName(a);
+                    const B = parseSheetName(b);
+
+                    // 🔥 เรียงวันที่ก่อน
+                    if (B.date - A.date !== 0) {
+                        return B.date - A.date;
+                    }
+
+                    // 🔥 ถ้าวันเดียวกัน → เอารอบมากกว่าไว้บน
+                    return B.round - A.round;
+                })
+                .forEach(name => {
+                    const opt = document.createElement("option");
+                    opt.value = name;
+                    opt.textContent = name;
+                    sheetSelect.appendChild(opt);
+                });
 
             // 👇 โหลดเสร็จ
             loading.style.display = "none";
@@ -490,6 +596,11 @@
             const sheetName = document.getElementById("sheetSelect").value;
             const loadBtn = document.getElementById("loadBtn");
             const loading = document.getElementById("loadingTable");
+
+            if (!sheetName) {
+                showPopup("กรุณาเลือกวันที่ก่อน");
+                return;
+            }
 
             // 👇 เริ่ม loading
             loadBtn.disabled = true;
@@ -541,17 +652,37 @@
                         <td>${item.qty}</td>
                         <td>
                             <input 
-                                type="number" 
+                                type="text"
+                                inputmode="numeric" 
                                 id="actual-${index}" 
                                 value="${extractNumber(item.actualQty)}"
                                 min="0"
+                                oninput="markEdited(this)"
+                                autocomplete="off" 
                             >
                         </td>
-                        <td><input type="text" id="note-${index}" value="${item.note || ''}"></td>
+                        <td>
+                            <input type="text" 
+                                id="note-${index}" 
+                                value="${item.note || ''}"
+                                oninput="markEdited(this)"
+                                autocomplete="off" 
+                            >
+                        </td>
                     `;
 
                     tbody.appendChild(tr);
                 });
+        }
+
+        function markEdited(input) {
+            const row = input.closest("tr");
+
+            if (input.value.trim() !== "") {
+                row.classList.add("edited-row");
+            } else {
+                row.classList.remove("edited-row");
+            }
         }
 
         async function saveData() {
@@ -559,9 +690,7 @@
 
             // 🔒 กันกดซ้ำ
             saveBtn.disabled = true;
-            saveBtn.innerHTML = "💾 กำลังบันทึก...";
-
-            saveBtn.classList.add("loading");
+            saveBtn.innerHTML = "⏳ กำลังบันทึก...";
 
             const type = document.getElementById("typeSelect").value;
             const sheetName = document.getElementById("sheetSelect").value;
@@ -611,8 +740,19 @@
 
                 if (text === "success") {
                     showPopup("บันทึกเรียบร้อย");
+
+                    // ✅ ปลดล็อคปุ่มหลังบันทึกเสร็จ
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = "💾 บันทึก";
+                    saveBtn.classList.remove("loading");
+
                 } else {
                     showPopup("บันทึกไม่สำเร็จ");
+
+                    // ❗ กรณี fail ก็ต้องปลดล็อคด้วย
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = "💾 บันทึก";
+                    saveBtn.classList.remove("loading");
                 }
 
             } catch (err) {
@@ -634,6 +774,10 @@
             const sheetSelect = document.getElementById("sheetSelect");
             sheetSelect.innerHTML = "<option value=''>-- เลือกวันที่ --</option>";
             sheetSelect.disabled = true;
+
+            const loadBtn = document.getElementById("loadBtn");
+            loadBtn.disabled = true;
+            loadBtn.textContent = "โหลดรายการ";
 
             // เคลียร์ search
             document.getElementById("searchInput").value = "";
@@ -671,13 +815,14 @@
 
             popup.classList.add("show");
 
-            // ⏱ ปิดอัตโนมัติ
-            setTimeout(() => {
-                popup.classList.remove("show");
+        }
 
-                // 🔄 reset หลังปิด
-                resetAll();
-            }, 3000);
+        function closePopup() {
+            const popup = document.getElementById("popup");
+            popup.classList.remove("show");
+
+            // 🔄 reset หลัง user กดยืนยัน
+            resetAll();
         }
 
         function resetAll() {
