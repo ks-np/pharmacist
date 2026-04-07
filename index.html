@@ -623,12 +623,12 @@
         }
 
         function extractNumber(val) {
-            if (!val) return "";
+            if (val === null || val === undefined || val === "") return "";
 
             val = val.toString();
 
             if (val.includes("x")) {
-                return val.split("x")[0]; // เอาเฉพาะเลขหน้า
+                return val.split("x")[0];
             }
 
             return val;
