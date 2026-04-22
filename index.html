@@ -83,28 +83,84 @@
             border: 1px solid #ccc;
         }
 
+        /* ===== STICKY ZONE ===== */
+        /* wrapper ครอบทั้ง search + thead */
+        .sticky-zone {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: white;
+            /* ให้บัง content ด้านล่าง */
+            padding-bottom: 0;
+            /* ชดเชย padding ของ .card ด้านซ้ายขวา */
+            margin-left: -20px;
+            margin-right: -20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
         #searchInput {
             width: 100%;
             box-sizing: border-box;
-            margin-bottom: 6px;
+            margin-bottom: 0;
             padding: 10px;
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
+        /* หัวตาราง sticky อยู่ใต้ search bar */
+        .sticky-thead {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            background: white;
+        }
+
+        .sticky-thead th {
+            background: #d9ead3;
+            font-weight: bold;
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* กำหนดความกว้างคอลัมน์ให้ตรงกับตารางหลัก */
+        .col-no {
+            width: 60px;
+        }
+
+        .col-name {
+            width: auto;
+        }
+
+        .col-qty {
+            width: 110px;
+        }
+
+        .col-actual {
+            width: 130px;
+        }
+
+        .col-note {
+            width: 150px;
+        }
+
+        /* ===== END STICKY ZONE ===== */
+
         table {
             width: 100%;
-            margin-top: 4px;
+            margin-top: 0;
             border-collapse: collapse;
             background: white;
-            border-radius: 12px;
+            border-radius: 0 0 12px 12px;
             overflow: hidden;
+            table-layout: fixed;
         }
 
         .table-wrapper {
             overflow-x: auto;
-            overflow-y: visible;
         }
 
         .control-group {
@@ -167,13 +223,6 @@
             text-align: left;
         }
 
-        thead th {
-            position: sticky;
-            z-index: 5;
-            background: #d9ead3;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
         input {
             width: 80px;
             padding: 6px;
@@ -231,27 +280,6 @@
             margin-top: 20px;
             text-align: center;
             font-size: 16px;
-        }
-
-        /* #loadingTable::before {
-            content: '';
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 3px solid #ccc;
-            border-top: 3px solid #4CAF50;
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: spin 1s linear infinite;
-        } */
-
-        .sticky-header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background: none;
-            padding-bottom: 0px;
-            border-radius: 12px;
         }
 
         .popup {
@@ -335,12 +363,10 @@
             cursor: pointer;
         }
 
-        /* dropdown วันที่ (เปิดใช้งานแล้ว) */
         #sheetSelect:not(:disabled) {
             cursor: pointer;
         }
 
-        /* ปุ่มโหลดรายการ (เปิดใช้งานแล้ว) */
         #loadBtn:not(:disabled) {
             cursor: pointer;
         }
@@ -352,21 +378,15 @@
         .primary-btn,
         .save-btn {
             transition: all 0.15s ease;
-            /* ✅ ทำให้ลื่น */
         }
 
         .save-btn:hover:not(:disabled) {
             background: #5a9442;
-            /* เขียวเข้มขึ้น */
         }
 
         .primary-btn:hover:not(:disabled),
         .save-btn:hover:not(:disabled) {
             transform: translateY(-1px);
-        }
-
-        .primary-btn:hover:not(:disabled),
-        .save-btn:hover:not(:disabled) {
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
 
@@ -450,13 +470,10 @@
         <div class="card">
 
             <div class="control-group">
-
                 <select id="typeSelect" onchange="onTypeChange()" class="typeSelect">
-
                     <option value="">-- เลือกประเภทยา --</option>
                     <option value="tablet">ยาเม็ด</option>
                     <option value="liquid">ยาน้ำ/ยาฉีด</option>
-
                 </select>
 
                 <select id="sheetSelect" disabled></select>
@@ -464,35 +481,50 @@
                 <button id="loadBtn" class="primary-btn" onclick="loadTable()" disabled>
                     โหลดรายการ
                 </button>
-
             </div>
 
             <div id="dataSection">
 
+                <!-- ✅ sticky zone: search + thead อยู่ในกลุ่มเดียวกัน -->
+                <div class="sticky-zone">
+                    <input type="text" id="searchInput" placeholder="🔍 ค้นหาชื่อยา..." autocomplete="off"
+                        oninput="renderTable()">
 
-
-                <div class="sticky-header">
-                    <input type="text" id="searchInput" placeholder="🔍 ค้นหาชื่อยา..." autocomplete="off" oninput="renderTable()">
+                    <!-- หัวตาราง sticky ที่ซิงค์ความกว้างกับตารางหลัก -->
+                    <div class="table-wrapper" style="overflow-x:auto; margin-bottom:0;">
+                        <table class="sticky-thead">
+                            <colgroup>
+                                <col class="col-no">
+                                <col class="col-name">
+                                <col class="col-qty">
+                                <col class="col-actual">
+                                <col class="col-note">
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>ลำดับ</th>
+                                    <th>ชื่อยา</th>
+                                    <th>จำนวนเบิก</th>
+                                    <th>จำนวนที่ได้จริง</th>
+                                    <th>หมายเหตุ</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
                 </div>
 
+                <!-- ตารางหลัก (ไม่มี thead แล้ว) -->
                 <div class="table-wrapper">
-
                     <table id="drugTable">
-
-                        <thead>
-                            <tr>
-                                <th>ลำดับ</th>
-                                <th>ชื่อยา</th>
-                                <th>จำนวนเบิก</th>
-                                <th>จำนวนที่ได้จริง</th>
-                                <th>หมายเหตุ</th>
-                            </tr>
-                        </thead>
-
+                        <colgroup>
+                            <col class="col-no">
+                            <col class="col-name">
+                            <col class="col-qty">
+                            <col class="col-actual">
+                            <col class="col-note">
+                        </colgroup>
                         <tbody></tbody>
-
                     </table>
-
                 </div>
 
                 <button class="save-btn" onclick="saveData()">💾 บันทึก</button>
@@ -515,10 +547,7 @@
         <div class="popup-box">
             <div class="popup-icon">✅</div>
             <div class="popup-text">บันทึกเรียบร้อย</div>
-
-            <!-- ✅ เพิ่มปุ่ม -->
             <button onclick="closePopup()" class="closePopup">ตกลง</button>
-
         </div>
     </div>
 
@@ -536,13 +565,11 @@
 
         async function loadSheetNames() {
             const type = document.getElementById("typeSelect").value;
-
             if (!type) return;
 
             const loading = document.getElementById("loadingText");
             const sheetSelect = document.getElementById("sheetSelect");
 
-            // 👇 แสดง loading + ปิด dropdown ชั่วคราว
             loading.style.display = "block";
             sheetSelect.disabled = true;
 
@@ -553,30 +580,17 @@
 
             sheets
                 .sort((a, b) => {
-
                     function parseSheetName(str) {
-                        // แยก (n)
                         const match = str.match(/\((\d+)\)/);
                         const round = match ? Number(match[1]) : 0;
-
-                        // เอาเฉพาะวันที่
                         const datePart = str.replace(/\s*\(\d+\)/, '');
                         const [d, m, y] = datePart.split('-').map(Number);
-
                         const date = new Date(y, m - 1, d);
-
                         return { date, round };
                     }
-
                     const A = parseSheetName(a);
                     const B = parseSheetName(b);
-
-                    // 🔥 เรียงวันที่ก่อน
-                    if (B.date - A.date !== 0) {
-                        return B.date - A.date;
-                    }
-
-                    // 🔥 ถ้าวันเดียวกัน → เอารอบมากกว่าไว้บน
+                    if (B.date - A.date !== 0) return B.date - A.date;
                     return B.round - A.round;
                 })
                 .forEach(name => {
@@ -586,7 +600,6 @@
                     sheetSelect.appendChild(opt);
                 });
 
-            // 👇 โหลดเสร็จ
             loading.style.display = "none";
             sheetSelect.disabled = false;
         }
@@ -602,7 +615,6 @@
                 return;
             }
 
-            // 👇 เริ่ม loading
             loadBtn.disabled = true;
             loadBtn.textContent = "กำลังโหลด...";
             loading.style.display = "block";
@@ -616,7 +628,6 @@
 
             document.getElementById("dataSection").style.display = "block";
 
-            // 👇 โหลดเสร็จ
             loading.style.display = "none";
             loadBtn.textContent = "โหลดรายการ";
             loadBtn.disabled = false;
@@ -624,13 +635,8 @@
 
         function extractNumber(val) {
             if (val === null || val === undefined || val === "") return "";
-
             val = val.toString();
-
-            if (val.includes("x")) {
-                return val.split("x")[0];
-            }
-
+            if (val.includes("x")) return val.split("x")[0];
             return val;
         }
 
@@ -643,9 +649,7 @@
             data
                 .filter(d => d.name.toLowerCase().includes(keyword))
                 .forEach((item, index) => {
-
                     const tr = document.createElement("tr");
-
                     tr.innerHTML = `
                         <td>${item.no}</td>
                         <td class="name">${item.name}</td>
@@ -670,14 +674,12 @@
                             >
                         </td>
                     `;
-
                     tbody.appendChild(tr);
                 });
         }
 
         function markEdited(input) {
             const row = input.closest("tr");
-
             if (input.value.trim() !== "") {
                 row.classList.add("edited-row");
             } else {
@@ -688,7 +690,6 @@
         async function saveData() {
             const saveBtn = document.querySelector(".save-btn");
 
-            // 🔒 กันกดซ้ำ
             saveBtn.disabled = true;
             saveBtn.innerHTML = "⏳ กำลังบันทึก...";
 
@@ -699,14 +700,8 @@
 
             data.forEach((item, index) => {
                 let actual = document.getElementById(`actual-${index}`).value;
-
-                // กัน NaN + ช่องว่าง
-                if (actual !== "") {
-                    actual = Number(actual);
-                }
-
+                if (actual !== "") actual = Number(actual);
                 const note = document.getElementById(`note-${index}`).value;
-
                 result.push({
                     name: item.name,
                     requestQty: item.qty,
@@ -717,11 +712,8 @@
 
             if (result.length === 0) {
                 showPopup("ไม่มีข้อมูลให้บันทึก");
-
-                // 🔓 ปลดล็อค
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = "💾 บันทึก";
-                saveBtn.classList.remove("loading");
                 return;
             }
 
@@ -740,109 +732,64 @@
 
                 if (text === "success") {
                     showPopup("บันทึกเรียบร้อย");
-
-                    // ✅ ปลดล็อคปุ่มหลังบันทึกเสร็จ
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = "💾 บันทึก";
-                    saveBtn.classList.remove("loading");
-
                 } else {
                     showPopup("บันทึกไม่สำเร็จ");
-
-                    // ❗ กรณี fail ก็ต้องปลดล็อคด้วย
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = "💾 บันทึก";
-                    saveBtn.classList.remove("loading");
                 }
 
             } catch (err) {
                 console.error(err);
                 showPopup("❌ ERROR");
-
-                // 🔓 ถ้า error ต้องปลดล็อค
+            } finally {
                 saveBtn.disabled = false;
-                saveBtn.textContent = "💾 บันทึก";
+                saveBtn.innerHTML = "💾 บันทึก";
                 saveBtn.classList.remove("loading");
             }
         }
 
         function resetUI() {
-            // เคลียร์ข้อมูล
             data = [];
-
-            // เคลียร์ dropdown วันที่
             const sheetSelect = document.getElementById("sheetSelect");
             sheetSelect.innerHTML = "<option value=''>-- เลือกวันที่ --</option>";
             sheetSelect.disabled = true;
-
             const loadBtn = document.getElementById("loadBtn");
             loadBtn.disabled = true;
             loadBtn.textContent = "โหลดรายการ";
-
-            // เคลียร์ search
             document.getElementById("searchInput").value = "";
-
-            // เคลียร์ table
             document.querySelector("#drugTable tbody").innerHTML = "";
-
-            // ซ่อน section
             document.getElementById("dataSection").style.display = "none";
         }
 
         function onTypeChange() {
-            resetUI();        // 👈 เคลียร์ทุกอย่างก่อน
-            loadSheetNames(); // 👈 แล้วค่อยโหลดใหม่
+            resetUI();
+            loadSheetNames();
         }
 
         document.getElementById("sheetSelect").addEventListener("change", function () {
-            const loadBtn = document.getElementById("loadBtn");
-
-            if (this.value) {
-                loadBtn.disabled = false;
-            } else {
-                loadBtn.disabled = true;
-            }
+            document.getElementById("loadBtn").disabled = !this.value;
         });
 
         function showPopup(message) {
             const popup = document.getElementById("popup");
-
             const isSuccess = message.includes("เรียบร้อย") || message.includes("สำเร็จ");
-
             popup.querySelector(".popup-box").className = "popup-box " + (isSuccess ? "success" : "error");
             popup.querySelector(".popup-icon").textContent = isSuccess ? "✅" : "❌";
             popup.querySelector(".popup-text").textContent = message;
-
             popup.classList.add("show");
-
         }
 
         function closePopup() {
-            const popup = document.getElementById("popup");
-            popup.classList.remove("show");
-
-            // 🔄 reset หลัง user กดยืนยัน
+            document.getElementById("popup").classList.remove("show");
             resetAll();
         }
 
         function resetAll() {
             data = [];
-
-            // reset dropdown
             document.getElementById("typeSelect").value = "";
             document.getElementById("sheetSelect").innerHTML = "<option value=''>-- เลือกวันที่ --</option>";
             document.getElementById("sheetSelect").disabled = true;
-
-            // reset ปุ่ม
             document.getElementById("loadBtn").disabled = true;
-
-            // เคลียร์ search
             document.getElementById("searchInput").value = "";
-
-            // เคลียร์ table
             document.querySelector("#drugTable tbody").innerHTML = "";
-
-            // ซ่อน data
             document.getElementById("dataSection").style.display = "none";
         }
     </script>
